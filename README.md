@@ -2,7 +2,6 @@
 
 Free, self-hosted mail merge. Build a personalized email in your browser, download a Python script, run it from your own machine through your own Gmail account. No SaaS subscription, no third party holding your contact list, no vendor lock-in.
 
-![OpenOutreach](openoutreach-brand/logo_horizontal.png)
 
 ---
 
