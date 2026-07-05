@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>OpenOutreach</title>
+<style>
+  :root{
+    --paper:#F5F6F8;
+    --card:#ffffff;
+    --ink:#132A46;
+    --ink-soft:#5B6B85;
+    --line:#E1E5EC;
+    --accent:#132A46;
+    --accent-soft:#EEF1F6;
+    --signal:#E8942C;
+    --signal-soft:#FCEEDD;
+    --mono: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+    --sans: "Inter", -apple-system, "Segoe UI", sans-serif;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:var(--sans);
+    padding:32px 24px 80px;
+  }
+  .wrap{max-width:1080px;margin:0 auto;}
+  header{margin-bottom:28px;}
+  header .eyebrow{
+    font-family:var(--mono);
+    font-size:12px;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    color:var(--accent);
+    margin:0 0 6px;
+  }
+  header h1{
+    font-size:26px;
+    font-weight:600;
+    margin:0 0 6px;
+    letter-spacing:-0.01em;
+  }
+  header p{
+    margin:0;
+    color:var(--ink-soft);
+    font-size:14px;
+    max-width:560px;
+  }
+  .grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:24px;
+    align-items:start;
+  }
+  @media (max-width:820px){ .grid{grid-template-columns:1fr;} }
+  .card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:22px 24px;
+  }
+  .card h2{
+    font-size:13px;
+    font-weight:600;
+    text-transform:uppercase;
+    letter-spacing:0.06em;
+    color:var(--ink-soft);
+    margin:0 0 16px;
+  }
+  .field{margin-bottom:16px;}
+  .field label{
+    display:block;
+    font-size:13px;
+    font-weight:600;
+    margin-bottom:6px;
+  }
+  .field .hint{
+    font-size:12px;
+    color:var(--ink-soft);
+    margin:4px 0 0;
+  }
+  input[type=text], input[type=number], textarea{
+    width:100%;
+    font-family:var(--sans);
+    font-size:14px;
+    padding:9px 10px;
+    border:1px solid var(--line);
+    border-radius:6px;
+    background:#fff;
+    color:var(--ink);
+  }
+  input[type=text]:focus, input[type=number]:focus, textarea:focus{
+    outline:none;
+    border-color:var(--accent);
+    box-shadow:0 0 0 3px var(--accent-soft);
+  }
+  textarea{resize:vertical;min-height:80px;line-height:1.5;}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .file-row{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    font-family:var(--mono);
+    font-size:13px;
+    background:var(--accent-soft);
+    border:1px solid var(--line);
+    border-radius:6px;
+    padding:8px 10px;
+    color:var(--accent);
+  }
+  .file-row input{
+    font-family:var(--mono);
+    background:transparent;
+    border:none;
+    flex:1;
+    padding:0;
+    color:var(--accent);
+    font-weight:600;
+  }
+  .file-row input:focus{outline:none;box-shadow:none;}
+
+  /* preview */
+  .preview-shell{
+    border:1px solid var(--line);
+    border-radius:10px;
+    overflow:hidden;
+    background:#f4f4f7;
+  }
+  .preview-toolbar{
+    display:flex;
+    gap:6px;
+    padding:10px 14px;
+    background:#ececec;
+    border-bottom:1px solid var(--line);
+  }
+  .dot{width:9px;height:9px;border-radius:50%;background:#d8d4c8;}
+  .preview-body{padding:20px;}
+  .mail-card{
+    background:#fff;
+    border-radius:8px;
+    overflow:hidden;
+    max-width:460px;
+    margin:0 auto;
+    font-family:Arial, Helvetica, sans-serif;
+  }
+  .mail-head{
+    padding:16px 22px;
+    border-bottom:1px solid #eee;
+  }
+  .mail-head img{display:block;height:32px;}
+  .mail-head .logo-fallback{
+    font-family:var(--sans);
+    font-weight:600;
+    color:var(--ink-soft);
+    font-size:13px;
+  }
+  .mail-body{padding:22px;}
+  .mail-body p{font-size:14px;color:#333;line-height:1.6;margin:0 0 14px;}
+  .mail-body a{color:#1a73e8;}
+
+  .actions{
+    margin-top:24px;
+    display:flex;
+    align-items:center;
+    gap:14px;
+  }
+  button{
+    font-family:var(--sans);
+    font-weight:600;
+    font-size:14px;
+    padding:12px 22px;
+    border-radius:7px;
+    border:none;
+    cursor:pointer;
+  }
+  #downloadBtn{
+    background:var(--accent);
+    color:#fff;
+  }
+  #downloadBtn:active{transform:scale(0.98);}
+  .status{font-size:13px;color:var(--ink-soft);}
+  .subject-preview{
+    font-size:14px;
+    font-weight:600;
+    margin-bottom:10px;
+    padding-bottom:10px;
+    border-bottom:1px dashed var(--line);
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header style="display:flex;align-items:center;gap:16px;">
+    <svg width="52" height="52" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;">
+      <rect x="34" y="34" width="132" height="132" rx="20" fill="none" stroke="#132A46" stroke-width="10"/>
+      <path d="M 34 62 h -16" stroke="#132A46" stroke-width="10" stroke-linecap="round"/>
+      <path d="M 34 138 h -16" stroke="#132A46" stroke-width="10" stroke-linecap="round"/>
+      <path d="M 50 74 L 100 118 L 150 74" fill="none" stroke="#E8942C" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <div>
+      <h1 style="margin:0 0 2px;font-size:24px;">OpenOutreach</h1>
+      <p style="margin:0;color:var(--ink-soft);font-size:14px;max-width:560px;">Free, self-hosted mail merge. Fill in the details below, preview on the right, then download a ready-to-run Python script — your Gmail credentials never touch this page.</p>
+    </div>
+  </header>
+
+  <div class="grid">
+    <div class="card">
+      <h2>Content</h2>
+
+      <div class="field">
+        <label for="subject">Subject line</label>
+        <input type="text" id="subject" value="You're Shortlisted — Next Steps">
+      </div>
+
+      <div class="field">
+        <label for="body">Main message</label>
+        <textarea id="body" rows="10">Hi {{name}},
+
+Congratulations! You've been shortlisted after resume review.
+
+As the next step, you'll just need to complete one short assessment. The detailed instructions will be shared with you soon.
+
+Expected assessment date: 10 July
+
+For further communication, please join our WhatsApp group:
+https://chat.whatsapp.com/JOePmjgVOCqKCMoAIgvhoV?s=cl&p=a&ilr=0</textarea>
+        <p class="hint">Write the whole email body here. Line breaks are kept as-is.</p>
+      </div>
+
+      <div class="field">
+        <label for="signoff">Sign-off</label>
+        <textarea id="signoff" rows="2">Best regards,
+Hiring Team</textarea>
+      </div>
+
+      <div class="field" style="background:var(--accent-soft);border:1px solid var(--line);border-radius:6px;padding:10px 12px;">
+        <label style="margin-bottom:4px;">Using your own CSV columns</label>
+        <p class="hint" style="margin:0;">
+          Subject, main message, and sign-off can all reference a CSV column with <code>{{column_name}}</code> — e.g. <code>{{college}}</code>, <code>{{role}}</code>, <code>{{recruiter}}</code>.
+          <code>{{name}}</code> and <code>{{email}}</code> are always available; anything else just needs a matching column in your CSV.
+        </p>
+      </div>
+
+      <div class="field">
+        <label for="sampledata">Sample values (for preview only)</label>
+        <textarea id="sampledata" rows="3" placeholder="college=IIT Delhi&#10;role=Backend Intern">college=IIT Delhi
+role=Backend Intern</textarea>
+        <p class="hint">One key=value per line. Only affects the preview on the right — the real script reads actual values from your CSV.</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Delivery settings</h2>
+
+      <div class="field">
+        <label>Applicant list file</label>
+        <div class="file-row">
+          <span>&#128193;</span>
+          <input type="text" id="csvfile" value="applicants.csv">
+        </div>
+        <p class="hint">Must have columns: name, email — sits next to the script.</p>
+      </div>
+
+      <div class="field">
+        <label>Logo file</label>
+        <div class="file-row">
+          <span>&#128193;</span>
+          <input type="text" id="logofile" value="logo.png">
+        </div>
+        <p class="hint">Must sit next to the script when you run it.</p>
+      </div>
+
+      <div class="row2">
+        <div class="field">
+          <label for="delay">Delay between emails (seconds)</label>
+          <input type="number" id="delay" value="2" min="0" step="1">
+        </div>
+        <div class="field">
+          <label for="scriptname">Script file name</label>
+          <input type="text" id="scriptname" value="openoutreach_send.py">
+        </div>
+      </div>
+
+      <p class="hint" style="margin-top:4px;">Sends via Gmail SMTP. Set <code>GMAIL_ADDRESS</code> and <code>GMAIL_APP_PASSWORD</code> as environment variables before running the downloaded script.</p>
+
+      <div style="margin-top:20px;">
+        <h2 style="margin-bottom:10px;">Live preview</h2>
+        <div class="preview-shell">
+          <div class="preview-toolbar">
+            <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+          </div>
+          <div class="preview-body">
+            <div class="mail-card">
+              <div class="mail-head">
+                <span class="logo-fallback">[ logo.png ]</span>
+              </div>
+              <div class="mail-body" id="mailPreview"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:24px;">
+    <h2>Compliance (unsubscribe)</h2>
+    <p class="hint" style="margin:0 0 16px;">Outbound email tools should let people opt out. When enabled, every email gets a footer with your organization's identity and a working unsubscribe path, and the script automatically skips anyone who has opted out.</p>
+
+    <div class="field">
+      <label style="display:flex;align-items:center;gap:8px;font-weight:600;">
+        <input type="checkbox" id="includeFooter" checked style="width:auto;">
+        Include compliance footer
+      </label>
+    </div>
+
+    <div class="row2">
+      <div class="field">
+        <label for="orgname">Organization name</label>
+        <input type="text" id="orgname" value="Your Company Name">
+      </div>
+      <div class="field">
+        <label for="orgaddress">Mailing address</label>
+        <input type="text" id="orgaddress" value="123 Business Street, City, Country">
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Suppression list file</label>
+      <div class="file-row">
+        <span>&#128193;</span>
+        <input type="text" id="suppressionfile" value="unsubscribed.csv">
+      </div>
+      <p class="hint">One email address per line. Anyone listed here is automatically skipped — created empty the first time you run the script.</p>
+    </div>
+
+    <div class="field" style="background:var(--signal-soft);border:1px solid var(--line);border-radius:6px;padding:10px 12px;">
+      <label style="margin-bottom:4px;">How people unsubscribe</label>
+      <p class="hint" style="margin:0;">
+        The footer asks recipients to reply with the word "Unsubscribe." A second script below scans your inbox for those replies and adds the senders to your suppression list automatically — run it before each new batch.
+      </p>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button id="downloadBtn">Download mailer script</button>
+    <button id="downloadCheckerBtn" style="background:#fff;color:var(--ink);border:1px solid var(--line);">Download unsubscribe checker</button>
+    <span class="status" id="statusMsg"></span>
+  </div>
+</div>
+
+<script>
+function el(id){ return document.getElementById(id); }
+
+function parseSampleData(){
+  const raw = el('sampledata').value.split('\n');
+  const data = {};
+  raw.forEach(line=>{
+    const idx = line.indexOf('=');
+    if(idx > 0){
+      const key = line.slice(0, idx).trim();
+      const val = line.slice(idx+1).trim();
+      if(key) data[key] = val;
+    }
+  });
+  return data;
+}
+
+function applyPlaceholders(template, data){
+  return template.replace(/\{\{\s*([a-zA-Z0-9_]+)\s*\}\}/g, (m, key)=>{
+    return Object.prototype.hasOwnProperty.call(data, key) ? data[key] : m;
+  });
+}
+
+function renderPreview(){
+  const sample = parseSampleData();
+  const baseData = Object.assign({
+    name: 'Alex',
+    email: 'alex@example.com',
+    sender_email: 'you@yourcompany.com'
+  }, sample);
+
+  const subject = applyPlaceholders(el('subject').value.trim(), baseData);
+  const body = applyPlaceholders(el('body').value.trim(), baseData);
+  const signoff = applyPlaceholders(el('signoff').value.trim(), baseData);
+
+  let footerHtml = '';
+  if(el('includeFooter').checked){
+    const org = el('orgname').value.trim();
+    const addr = el('orgaddress').value.trim();
+    footerHtml =
+      '<p style="white-space:pre-wrap;font-size:12px;color:#8a93a3;border-top:1px solid #eee;padding-top:12px;margin-top:16px;">' +
+      escapeHtml(org) + ' · ' + escapeHtml(addr) + '<br>' +
+      'Don\u2019t want emails like this? Reply with "Unsubscribe" and we\u2019ll remove you.' +
+      '</p>';
+  }
+
+  el('mailPreview').innerHTML =
+    '<div class="subject-preview">' + escapeHtml(subject) + '</div>' +
+    '<p style="white-space:pre-wrap;">' + escapeHtml(body) + '</p>' +
+    '<p style="white-space:pre-wrap;">' + escapeHtml(signoff) + '</p>' +
+    footerHtml;
+}
+
+function escapeHtml(s){
+  const d = document.createElement('div');
+  d.innerText = s;
+  return d.innerHTML;
+}
+
+['subject','body','signoff','sampledata','includeFooter','orgname','orgaddress'].forEach(id=>{
+  const node = el(id);
+  node.addEventListener('input', renderPreview);
+  node.addEventListener('change', renderPreview);
+});
+renderPreview();
+
+function pyEscape(s){
+  return s.replace(/\\/g,'\\\\').replace(/"{3,}/g, m => m.replace(/"/g, '\\"'));
+}
+
+function buildScript(){
+  const subject = pyEscape(el('subject').value.trim());
+  const body = pyEscape(el('body').value.trim());
+  const signoff = pyEscape(el('signoff').value.trim());
+  const csvfile = pyEscape(el('csvfile').value.trim() || 'applicants.csv');
+  const logofile = pyEscape(el('logofile').value.trim() || 'logo.png');
+  const delay = parseInt(el('delay').value, 10) || 0;
+  const includeFooter = el('includeFooter').checked;
+  const orgName = pyEscape(el('orgname').value.trim() || 'Your Company Name');
+  const orgAddress = pyEscape(el('orgaddress').value.trim() || '');
+  const suppressionFile = pyEscape(el('suppressionfile').value.trim() || 'unsubscribed.csv');
+
+  const lines = [];
+  lines.push('"""');
+  lines.push('OpenOutreach mailer -- send a personalized email to everyone in a CSV.');
+  lines.push('HTML email with an embedded logo, plus a compliance footer and');
+  lines.push('automatic unsubscribe suppression.');
+  lines.push('');
+  lines.push('CUSTOM CSV COLUMNS');
+  lines.push('-------------------');
+  lines.push('Any {{column_name}} placeholder in SUBJECT_TEMPLATE / BODY_TEMPLATE /');
+  lines.push('SIGNOFF_TEMPLATE below is filled in per-applicant from that row\'s CSV');
+  lines.push('column of the same name (write the whole email, including any date or');
+  lines.push('link, directly into BODY_TEMPLATE). {{name}} and {{email}} are always');
+  lines.push('available; any other column just needs to exist in your CSV.');
+  lines.push('');
+  lines.push('COMPLIANCE / UNSUBSCRIBE');
+  lines.push('-------------------------');
+  lines.push('Every email (if INCLUDE_COMPLIANCE_FOOTER is True) ends with your');
+  lines.push('organization name/address and instructions to reply "Unsubscribe".');
+  lines.push('Addresses listed in SUPPRESSION_FILE are skipped automatically. Run');
+  lines.push('the companion unsubscribe-checker script periodically to scan your');
+  lines.push('inbox for those replies and add them to SUPPRESSION_FILE for you.');
+  lines.push('');
+  lines.push('SETUP (one-time)');
+  lines.push('-----------------');
+  lines.push('1. Get a Gmail App Password:');
+  lines.push('   - https://myaccount.google.com/security -> turn on 2-Step Verification');
+  lines.push('   - https://myaccount.google.com/apppasswords -> create one, copy the 16-char code');
+  lines.push('2. Set environment variables before running:');
+  lines.push('       export GMAIL_ADDRESS="you@example.com"');
+  lines.push('       export GMAIL_APP_PASSWORD="xxxxxxxxxxxxxxxx"');
+  lines.push('3. Put ' + csvfile + ' (columns: name,email, plus any custom columns) next to this script.');
+  lines.push('4. Put ' + logofile + ' next to this script.');
+  lines.push('5. Run:  python ' + el('scriptname').value.trim());
+  lines.push('"""');
+  lines.push('');
+  lines.push('import csv');
+  lines.push('import os');
+  lines.push('import re');
+  lines.push('import smtplib');
+  lines.push('import ssl');
+  lines.push('import sys');
+  lines.push('import time');
+  lines.push('from email.message import EmailMessage');
+  lines.push('from pathlib import Path');
+  lines.push('');
+  lines.push('# ---------------- CONFIG ----------------');
+  lines.push('CSV_FILE = "' + csvfile + '"');
+  lines.push('LOGO_FILE = "' + logofile + '"');
+  lines.push('SMTP_HOST = "smtp.gmail.com"');
+  lines.push('SMTP_PORT = 587');
+  lines.push('DELAY_BETWEEN_EMAILS_SECONDS = ' + delay);
+  lines.push('');
+  lines.push('# Compliance / unsubscribe settings');
+  lines.push('INCLUDE_COMPLIANCE_FOOTER = ' + (includeFooter ? 'True' : 'False'));
+  lines.push('ORG_NAME = "' + orgName + '"');
+  lines.push('ORG_ADDRESS = "' + orgAddress + '"');
+  lines.push('SUPPRESSION_FILE = "' + suppressionFile + '"  # one email per line; skipped automatically');
+  lines.push('');
+  lines.push('# Templates -- use {{column_name}} to pull in any CSV column.');
+  lines.push('SUBJECT_TEMPLATE = "' + subject + '"');
+  lines.push('BODY_TEMPLATE = """' + body + '"""');
+  lines.push('SIGNOFF_TEMPLATE = """' + signoff + '"""');
+  lines.push('# -----------------------------------------');
+  lines.push('');
+  lines.push('PLACEHOLDER_RE = re.compile(r"\\{\\{\\s*([a-zA-Z0-9_]+)\\s*\\}\\}")');
+  lines.push('');
+  lines.push('');
+  lines.push('def render(template: str, data: dict) -> str:');
+  lines.push('    """Replace every {{column_name}} in template with data[column_name]."""');
+  lines.push('    def repl(m):');
+  lines.push('        key = m.group(1)');
+  lines.push('        return str(data.get(key, m.group(0)))');
+  lines.push('    return PLACEHOLDER_RE.sub(repl, template)');
+  lines.push('');
+  lines.push('');
+  lines.push('def compliance_footer_text() -> str:');
+  lines.push('    if not INCLUDE_COMPLIANCE_FOOTER:');
+  lines.push('        return ""');
+  lines.push('    org_line = ORG_NAME + (f" - {ORG_ADDRESS}" if ORG_ADDRESS else "")');
+  lines.push('    return (');
+  lines.push('        "\\n\\n---\\n" + org_line +');
+  lines.push('        "\\nYou can stop receiving these emails by replying with the word Unsubscribe."');
+  lines.push('    )');
+  lines.push('');
+  lines.push('');
+  lines.push('def compliance_footer_html() -> str:');
+  lines.push('    if not INCLUDE_COMPLIANCE_FOOTER:');
+  lines.push('        return ""');
+  lines.push('    org_line = ORG_NAME + (f" &middot; {ORG_ADDRESS}" if ORG_ADDRESS else "")');
+  lines.push('    return (');
+  lines.push('        \'<p style="font-size:12px;color:#8a93a3;border-top:1px solid #eeeeee;\'');
+  lines.push('        \'margin:20px 0 0;padding-top:12px;">\' + org_line +');
+  lines.push('        "<br>You can stop receiving these emails by replying with the word Unsubscribe.</p>"');
+  lines.push('    )');
+  lines.push('');
+  lines.push('');
+  lines.push('def build_html_body(data: dict) -> str:');
+  lines.push('    body = render(BODY_TEMPLATE, data)');
+  lines.push('    signoff = render(SIGNOFF_TEMPLATE, data)');
+  lines.push('    body_html = body.replace("\\n", "<br>")');
+  lines.push('    signoff_html = signoff.replace("\\n", "<br>")');
+  lines.push('    footer_html = compliance_footer_html()');
+  lines.push('    return f"""\\');
+  lines.push('<html>');
+  lines.push('  <body style="margin:0;padding:0;background-color:#f4f4f7;font-family:Arial, Helvetica, sans-serif;">');
+  lines.push('    <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f4f4f7;padding:24px 0;">');
+  lines.push('      <tr>');
+  lines.push('        <td align="center">');
+  lines.push('          <table width="600" cellpadding="0" cellspacing="0" style="background-color:#ffffff;border-radius:8px;overflow:hidden;">');
+  lines.push('            <tr>');
+  lines.push('              <td style="padding:24px 32px;border-bottom:1px solid #eeeeee;">');
+  lines.push('                <img src="cid:company_logo" alt="Logo" height="40" style="display:block;">');
+  lines.push('              </td>');
+  lines.push('            </tr>');
+  lines.push('            <tr>');
+  lines.push('              <td style="padding:32px;">');
+  lines.push('                <p style="font-size:15px;color:#333333;line-height:1.6;margin:0 0 20px 0;">');
+  lines.push('                  {body_html}');
+  lines.push('                </p>');
+  lines.push('                <p style="font-size:15px;color:#333333;line-height:1.6;margin:0;">');
+  lines.push('                  {signoff_html}');
+  lines.push('                </p>{footer_html}');
+  lines.push('              </td>');
+  lines.push('            </tr>');
+  lines.push('          </table>');
+  lines.push('        </td>');
+  lines.push('      </tr>');
+  lines.push('    </table>');
+  lines.push('  </body>');
+  lines.push('</html>');
+  lines.push('"""');
+  lines.push('');
+  lines.push('');
+  lines.push('def build_text_body(data: dict) -> str:');
+  lines.push('    body = render(BODY_TEMPLATE, data)');
+  lines.push('    signoff = render(SIGNOFF_TEMPLATE, data)');
+  lines.push('    return f"{body}\\n\\n{signoff}" + compliance_footer_text()');
+  lines.push('');
+  lines.push('');
+  lines.push('def load_applicants(csv_path: str):');
+  lines.push('    applicants = []');
+  lines.push('    with open(csv_path, newline="", encoding="utf-8") as f:');
+  lines.push('        reader = csv.DictReader(f)');
+  lines.push('        for row in reader:');
+  lines.push('            data = {(k or "").strip(): (v or "").strip() for k, v in row.items() if k}');
+  lines.push('            if data.get("email"):');
+  lines.push('                data.setdefault("name", "Applicant")');
+  lines.push('                applicants.append(data)');
+  lines.push('    return applicants');
+  lines.push('');
+  lines.push('');
+  lines.push('def load_suppression_list(path: str) -> set:');
+  lines.push('    """Emails that have unsubscribed. One address per line; created empty if missing."""');
+  lines.push('    p = Path(path)');
+  lines.push('    if not p.exists():');
+  lines.push('        p.touch()');
+  lines.push('        return set()');
+  lines.push('    with open(p, encoding="utf-8") as f:');
+  lines.push('        return {line.strip().lower() for line in f if line.strip()}');
+  lines.push('');
+  lines.push('');
+  lines.push('def send_email(smtp, from_addr, to_addr, data, logo_path):');
+  lines.push('    subject = render(SUBJECT_TEMPLATE, data)');
+  lines.push('    msg = EmailMessage()');
+  lines.push('    msg["Subject"] = subject');
+  lines.push('    msg["From"] = from_addr');
+  lines.push('    msg["To"] = to_addr');
+  lines.push('    msg.set_content(build_text_body(data))');
+  lines.push('    msg.add_alternative(build_html_body(data), subtype="html")');
+  lines.push('');
+  lines.push('    html_part = msg.get_payload()[1]');
+  lines.push('    with open(logo_path, "rb") as f:');
+  lines.push('        logo_data = f.read()');
+  lines.push('    html_part.add_related(logo_data, maintype="image", subtype="png", cid="company_logo")');
+  lines.push('');
+  lines.push('    smtp.send_message(msg)');
+  lines.push('');
+  lines.push('');
+  lines.push('def main():');
+  lines.push('    gmail_address = os.environ.get("GMAIL_ADDRESS")');
+  lines.push('    gmail_app_password = os.environ.get("GMAIL_APP_PASSWORD")');
+  lines.push('');
+  lines.push('    if not gmail_address or not gmail_app_password:');
+  lines.push('        print("ERROR: Set GMAIL_ADDRESS and GMAIL_APP_PASSWORD environment variables first.")');
+  lines.push('        sys.exit(1)');
+  lines.push('');
+  lines.push('    if not Path(LOGO_FILE).exists():');
+  lines.push('        print(f"ERROR: Logo file not found: {LOGO_FILE}")');
+  lines.push('        sys.exit(1)');
+  lines.push('');
+  lines.push('    if not Path(CSV_FILE).exists():');
+  lines.push('        print(f"ERROR: Applicant CSV not found: {CSV_FILE}")');
+  lines.push('        sys.exit(1)');
+  lines.push('');
+  lines.push('    applicants = load_applicants(CSV_FILE)');
+  lines.push('    if not applicants:');
+  lines.push('        print("No applicants found in CSV (need a valid \'email\' column).")');
+  lines.push('        sys.exit(1)');
+  lines.push('');
+  lines.push('    suppressed = load_suppression_list(SUPPRESSION_FILE)');
+  lines.push('    if suppressed:');
+  lines.push('        print(f"{len(suppressed)} address(es) in {SUPPRESSION_FILE} will be skipped.")');
+  lines.push('');
+  lines.push('    print(f"Found {len(applicants)} applicant(s). Sending emails...")');
+  lines.push('');
+  lines.push('    context = ssl.create_default_context()');
+  lines.push('    sent, skipped, failed = 0, 0, []');
+  lines.push('');
+  lines.push('    with smtplib.SMTP(SMTP_HOST, SMTP_PORT) as smtp:');
+  lines.push('        smtp.starttls(context=context)');
+  lines.push('        smtp.login(gmail_address, gmail_app_password)');
+  lines.push('');
+  lines.push('        for data in applicants:');
+  lines.push('            data.setdefault("sender_email", gmail_address)');
+  lines.push('            if data["email"].lower() in suppressed:');
+  lines.push('                print(f"  skipped (unsubscribed): {data[\'email\']}")');
+  lines.push('                skipped += 1');
+  lines.push('                continue');
+  lines.push('            try:');
+  lines.push('                send_email(smtp, gmail_address, data["email"], data, LOGO_FILE)');
+  lines.push('                print(f"  sent to {data[\'email\']}")');
+  lines.push('                sent += 1');
+  lines.push('            except Exception as e:');
+  lines.push('                print(f"  failed for {data.get(\'email\')}: {e}")');
+  lines.push('                failed.append(data.get("email"))');
+  lines.push('            time.sleep(DELAY_BETWEEN_EMAILS_SECONDS)');
+  lines.push('');
+  lines.push('    print(f"\\nDone. Sent: {sent}/{len(applicants)}  Skipped (unsubscribed): {skipped}")');
+  lines.push('    if failed:');
+  lines.push('        print("Failed addresses:")');
+  lines.push('        for addr in failed:');
+  lines.push('            print(f"  - {addr}")');
+  lines.push('');
+  lines.push('');
+  lines.push('if __name__ == "__main__":');
+  lines.push('    main()');
+  lines.push('');
+
+  return lines.join('\n');
+}
+
+function buildCheckerScript(){
+  const suppressionFile = pyEscape(el('suppressionfile').value.trim() || 'unsubscribed.csv');
+  const lines = [];
+  lines.push('"""');
+  lines.push('OpenOutreach unsubscribe checker.');
+  lines.push('');
+  lines.push('Scans your Gmail inbox (via IMAP) for replies containing the word');
+  lines.push('"unsubscribe" and adds each sender to your suppression list, so the');
+  lines.push('main OpenOutreach mailer script skips them on future runs.');
+  lines.push('');
+  lines.push('Uses the same GMAIL_ADDRESS / GMAIL_APP_PASSWORD environment variables');
+  lines.push('as the mailer script. Run this before each new batch of emails.');
+  lines.push('"""');
+  lines.push('');
+  lines.push('import email');
+  lines.push('import imaplib');
+  lines.push('import os');
+  lines.push('import sys');
+  lines.push('from pathlib import Path');
+  lines.push('');
+  lines.push('SUPPRESSION_FILE = "' + suppressionFile + '"');
+  lines.push('SEARCH_TERM = "unsubscribe"');
+  lines.push('');
+  lines.push('');
+  lines.push('def load_existing(path: str) -> set:');
+  lines.push('    if not Path(path).exists():');
+  lines.push('        return set()');
+  lines.push('    with open(path, encoding="utf-8") as f:');
+  lines.push('        return {line.strip().lower() for line in f if line.strip()}');
+  lines.push('');
+  lines.push('');
+  lines.push('def main():');
+  lines.push('    gmail_address = os.environ.get("GMAIL_ADDRESS")');
+  lines.push('    gmail_app_password = os.environ.get("GMAIL_APP_PASSWORD")');
+  lines.push('    if not gmail_address or not gmail_app_password:');
+  lines.push('        print("ERROR: Set GMAIL_ADDRESS and GMAIL_APP_PASSWORD environment variables first.")');
+  lines.push('        sys.exit(1)');
+  lines.push('');
+  lines.push('    existing = load_existing(SUPPRESSION_FILE)');
+  lines.push('    new_addrs = set()');
+  lines.push('');
+  lines.push('    with imaplib.IMAP4_SSL("imap.gmail.com") as imap:');
+  lines.push('        imap.login(gmail_address, gmail_app_password)');
+  lines.push('        imap.select("INBOX")');
+  lines.push('        status, data = imap.search(None, f\'(SUBJECT "{SEARCH_TERM}")\')');
+  lines.push('        ids = data[0].split()');
+  lines.push('        print(f"Found {len(ids)} message(s) matching subject \\\'{SEARCH_TERM}\\\'.")');
+  lines.push('');
+  lines.push('        for msg_id in ids:');
+  lines.push('            status, msg_data = imap.fetch(msg_id, "(RFC822)")');
+  lines.push('            raw = msg_data[0][1]');
+  lines.push('            msg = email.message_from_bytes(raw)');
+  lines.push('            from_addr = email.utils.parseaddr(msg.get("From", ""))[1].lower()');
+  lines.push('            if from_addr and from_addr not in existing:');
+  lines.push('                new_addrs.add(from_addr)');
+  lines.push('');
+  lines.push('    if new_addrs:');
+  lines.push('        with open(SUPPRESSION_FILE, "a", encoding="utf-8") as f:');
+  lines.push('            for addr in sorted(new_addrs):');
+  lines.push('                f.write(addr + "\\n")');
+  lines.push('        print(f"Added {len(new_addrs)} new address(es) to {SUPPRESSION_FILE}:")');
+  lines.push('        for addr in sorted(new_addrs):');
+  lines.push('            print(f"  - {addr}")');
+  lines.push('    else:');
+  lines.push('        print("No new unsubscribe requests found.")');
+  lines.push('');
+  lines.push('');
+  lines.push('if __name__ == "__main__":');
+  lines.push('    main()');
+  lines.push('');
+  return lines.join('\n');
+}
+
+el('downloadBtn').addEventListener('click', function(){
+  const content = buildScript();
+  const filename = (el('scriptname').value.trim() || 'openoutreach_send.py');
+  downloadFile(content, filename, 'text/x-python');
+  el('statusMsg').textContent = 'Downloaded ' + filename;
+  setTimeout(()=>{ el('statusMsg').textContent = ''; }, 3000);
+});
+
+el('downloadCheckerBtn').addEventListener('click', function(){
+  const content = buildCheckerScript();
+  downloadFile(content, 'check_unsubscribes.py', 'text/x-python');
+  el('statusMsg').textContent = 'Downloaded check_unsubscribes.py';
+  setTimeout(()=>{ el('statusMsg').textContent = ''; }, 3000);
+});
+
+function downloadFile(content, filename, mime){
+  const blob = new Blob([content], {type: mime});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+</script>
+</body>
+</html>
